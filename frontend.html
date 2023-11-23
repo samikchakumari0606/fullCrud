@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Product Management</title>
+</head>
+<body>
+  <h1>Product Management</h1>
+  
+  <div>
+    <h2>Add Product</h2>
+    <label for="name">Name:</label>
+    <input type="text" id="name"><br><br>
+    
+    <label for="price">Price:</label>
+    <input type="number" id="price"><br><br>
+    
+    <label for="brand">Brand:</label>
+    <input type="text" id="brand"><br><br>
+    
+    <label for="category">Category:</label>
+    <input type="text" id="category"><br><br>
+    
+    <button onclick="addProduct()">Add Product</button>
+  </div>
+  
+  <div>
+    <h2>Delete Product</h2>
+    <label for="deleteId">Product ID:</label>
+    <input type="text" id="deleteId"><br><br>
+    
+    <button onclick="deleteProduct()">Delete Product</button>
+  </div>
+  
+  <div>
+    <h2>Update Product</h2>
+    <label for="updateId">Product ID:</label>
+    <input type="text" id="updateId"><br><br>
+    
+    <label for="updateField">Field to update:</label>
+    <select id="updateField">
+      <option value="name">Name</option>
+      <option value="price">Price</option>
+      <option value="brand">Brand</option>
+      <option value="category">Category</option>
+    </select><br><br>
+    
+    <label for="updateValue">New Value:</label>
+    <input type="text" id="updateValue"><br><br>
+    
+    <button onclick="updateProduct()">Update Product</button>
+  </div>
+  
+  <div>
+    <h2>List of Products</h2>
+    <ul id="productList"></ul>
+  </div>
+
+  <script>
+    async function addProduct() {
+  const name = document.getElementById('name').value;
+  const price = document.getElementById('price').value;
+  const brand = document.getElementById('brand').value;
+  const category = document.getElementById('category').value;
+
+  const response = await fetch('http://localhost:3000/create', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ name, price, brand, category }),
+  });
+
+  const result = await response.json();
+  console.log(result);
+}
+
+async function deleteProduct() {
+  const deleteId = document.getElementById('deleteId').value;
+
+  const response = await fetch(`http://localhost:3000/delete/${deleteId}`, {
+    method: 'DELETE',
+  });
+
+  const result = await response.text();
+  console.log(result);
+
+  // After the deletion, trigger a refresh to update the product list
+  fetchProducts();
+}
+
+async function updateProduct() {
+  const updateId = document.getElementById('updateId').value;
+  const field = document.getElementById('updateField').value;
+  const value = document.getElementById('updateValue').value;
+
+  const response = await fetch(`http://localhost:3000/update/${updateId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ [field]: value }),
+  });
+
+  const result = await response.text();
+  console.log(result);
+
+   // After the updation, trigger a refresh to update the product list
+   fetchProducts();
+}
+
+async function fetchProducts() {
+  try {
+    const response = await fetch('http://localhost:3000/list');
+    const data = await response.json();
+
+    const productList = document.getElementById('productList');
+    productList.innerHTML = '';
+
+    data.forEach(product => {
+      const li = document.createElement('li');
+      li.textContent = `ID: ${product._id}, Name: ${product.name}, Price: ${product.price}, Brand: ${product.brand}, Category: ${product.category}`;
+      productList.appendChild(li);
+    });
+  } catch (error) {
+    console.error('Error fetching products:', error.message);
+  }
+  fetchProducts();
+}
+
+fetchProducts();
+
+
+
+
+  </script>
+</body>
+</html>
